@@ -1,15 +1,19 @@
 const videojuegoService = require('../services/videojuegoService');
 
-async function getGames(req, res) {
-    const juegos = await videojuegoService.getGames();
+async function getGames(req, res, next) {
+    try {
+        const juegos = await videojuegoService.getGames(req.query);
 
-    res.status(200).json({
-        estado: 'ok',
-        data: juegos
-    });
+        res.status(200).json({
+            estado: 'ok',
+            data: juegos
+        });
+    } catch (error) {
+        next(error);
+    }
 }
 
-async function getGameFromId(req, res) {
+async function getGameFromId(req, res, next) {
     try {
         const juegoId = await videojuegoService.getGameFromId(req.params.id);
         res.status(200).json({
@@ -17,14 +21,11 @@ async function getGameFromId(req, res) {
             data: juegoId
         })
     } catch (error) {
-        res.status(500).json({
-            estado: 'error',
-            data: error.message
-        })
+        next(error);
     }
 }
 
-async function createGame(req, res) {
+async function createGame(req, res, next) {
     try {
         const juegoCreado = await videojuegoService.createGame(req.body);
 
@@ -33,14 +34,11 @@ async function createGame(req, res) {
             data: juegoCreado
         })
     } catch (error) {
-        res.status(500).json({
-            estado: 'error',
-            data: error.message
-        })
+        next(error);
     }
 }
 
-async function updateGame(req, res) {
+async function updateGame(req, res, next) {
     try {
         const juegoActualizado = await videojuegoService.updateGame(req.body, req.params.id);
 
@@ -49,14 +47,11 @@ async function updateGame(req, res) {
             data: juegoActualizado
         })
     } catch (error) {
-        res.status(500).json({
-            estado: 'error',
-            data: error.message
-        })
+        next(error);
     }
 }
 
-async function deleteGame(req, res) {
+async function deleteGame(req, res, next) {
     try {
         const juegoEliminado = await videojuegoService.deleteGame(req.params.id);
 
@@ -65,10 +60,7 @@ async function deleteGame(req, res) {
             data: 'Juego Eliminado'
         })
     } catch (error) {
-        res.status(500).json({
-            estado: 'error',
-            data: error.message
-        })
+        next(error);
     }
 }
 

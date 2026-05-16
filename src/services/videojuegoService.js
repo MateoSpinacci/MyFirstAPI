@@ -1,7 +1,34 @@
 const repositorio = require('../repositories/videojuegoRepo');
 
-async function getGames() {
-    return repositorio.getAllGames();
+async function definirFiltros(query) {
+    const filtrosAplicados = {};
+
+    if (query.finished !== undefined) {
+        if (query.finished === "true" || query.finished === "false") {
+            filtrosAplicados.finished = query.finished === "true";
+        } else {
+            throw new Error("Solo Puedes Filtrar Por Completadas y No Completadas...")
+        }
+    }
+
+    if (query.genre !== undefined) {
+        filtrosAplicados.genre = query.genre.toLowerCase().trim();
+    }
+
+    if (query.search !== undefined) {
+        filtrosAplicados.search = query.search.toLowerCase().trim();
+    }
+
+    return filtrosAplicados;
+}
+
+async function getGames(filtros) {
+    const filtro = await definirFiltros(filtros);
+    const juegosFiltrados = await repositorio.getAllGames(filtro);
+    if (juegosFiltrados.length === 0) {
+        throw new Error("No Se Encontraron Juegos Con Los Filtros Aplicados...")
+    }
+    return juegosFiltrados;
 }
 
 async function getGameFromId(id) {

@@ -1,7 +1,21 @@
 const { juegos, siguienteId } = require('../models/videojuegoModel');
 
-async function getAllGames() {
-    return juegos;
+async function getAllGames(filtros) {
+    let juegosFiltrados = juegos;
+
+    if (filtros.finished !== undefined) {
+        juegosFiltrados = juegos.filter((juego) => juego.finished === filtros.finished);
+    };
+
+    if (filtros.genre !== undefined) {
+        juegosFiltrados = juegos.filter((juego) => juego.genre.toLowerCase().trim() === filtros.genre);
+    };
+
+    if (filtros.search !== undefined) {
+        juegosFiltrados = juegos.filter((juego) => juego.title.toLowerCase().trim().includes(filtros.search));
+    };
+
+    return juegosFiltrados;
 }
 
 async function getGameById(id) {
