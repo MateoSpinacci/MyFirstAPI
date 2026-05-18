@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 app.use(express.json());
+const sequelize = require('./db');
+const Juego = require('./models/videojuegoModel');
 const controller = require('./controllers/videojuegoController');
 const serverConfig = require('./config/serverConfig');
 
@@ -23,6 +25,36 @@ app.use((error, req, res, next) => {
     });
 })
 
-app.listen(serverConfig.port, () => {
-  console.log(`API escuchando en http://localhost:${serverConfig.port}`);
-});
+async function start() {
+    try {
+        await sequelize.authenticate();
+
+        await sequelize.sync();
+
+        const contador = await Juego.count();
+
+        if (contador === 0) {
+            await Juego.bulkCreate([
+                {
+                    title: 'minecraft',
+                    genre: 'sandbox',
+                    finished: false
+                },
+                {
+                    title: 'gta v',
+                    genre: 'accion',
+                    finished: true
+                }
+            ]);
+        }
+
+        app.listen(serverConfig.port, () => {
+            console.log(`API escuchando en http://localhost:${serverConfig.port}`);
+        });
+    } catch (error) {
+        console.error('No se pudo iniciar la API:', error.message);
+        process.exit(1);
+    }
+}
+
+start();

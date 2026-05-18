@@ -1,58 +1,68 @@
-const { juegos, siguienteId } = require('../models/videojuegoModel');
+const Juego = require('../models/videojuegoModel');
+const { Op } = require('sequelize');
 
 async function getAllGames(filtros) {
-    let juegosFiltrados = juegos;
+    const where = {};
 
     if (filtros.finished !== undefined) {
-        juegosFiltrados = juegos.filter((juego) => juego.finished === filtros.finished);
+        where.finished = filtros.finished
     };
 
     if (filtros.genre !== undefined) {
-        juegosFiltrados = juegos.filter((juego) => juego.genre.toLowerCase().trim() === filtros.genre);
+        where.genre = filtros.genre
     };
-
+    
     if (filtros.search !== undefined) {
-        juegosFiltrados = juegos.filter((juego) => juego.title.toLowerCase().trim().includes(filtros.search));
+        where.title = {
+            [Op.like]: `%${filtros.search}%`
+        }
     };
 
-    return juegosFiltrados;
+    return await Juego.findAll({where})
 }
 
 async function getGameById(id) {
-    return juegos.find((juego) => juego.id === id) || null;
+    return await Juego.findByPk(id);
 }
 
 async function createGame(body) {
-    const nuevoId = siguienteId();
-    const genero = body.genre || 'SC';
-    const juegoNuevo = {
-        id: nuevoId,
-        title: body.title,
-        genre: genero,
-        finished: false,
+    let juegoNuevo = {
+        title: body.title.toLowerCase().trim(),
+        genre: (body.genre) ? body.genre.toLowerCase().trim() : undefined,
     }
-    juegos.push(juegoNuevo);
+    juegoNuevo = await Juego.create(juegoNuevo);
     return juegoNuevo;
 }
 
 async function updateGame(body, id) {
-    const juego = juegos.find((juego) => juego.id === id) || null;
-    if (juego === null) {
-        return juego;
-    };
-    juego.title = body.title || juego.title;
-    juego.genre = body.genre || juego.genre;
-    juego.finished = body.finished ?? juego.finished;
+    const JuegoActualizado = await Juego.findByPk(id);
 
-    return juego;
+    if (JuegoActualizado === null) {
+        return null
+    };
+
+    const juegoNuevo = {
+        title: body.title || JuegoActualizado.title,
+        genre: body.genre || JuegoActualizado.genre,
+        finished: body.finished ?? JuegoActualizado.finished,
+    };
+
+    await Juego.update(juegoNuevo, 
+        {where: {id}}
+    );
+
+    return juegoNuevo;
 }
 
 async function deleteGame(id) {
-    const indice = juegos.findIndex((juego) => juego.id === id);
-    if (indice === -1) {
-        return false;
+    const borro = await Juego.destroy({
+        where: {id}
+    });
+
+    if (borro === 0) {
+        return false
     };
-    juegos.splice(indice, 1);
+
     return true;
 }
 
@@ -62,4 +72,5 @@ module.exports = {
     createGame,
     updateGame,
     deleteGame,
+
 };

@@ -1,25 +1,37 @@
-const juegos = [
+const { DataTypes } = require('sequelize');
+const sequelize = require('../db');
+
+const Juego = sequelize.define(
+    'Juego',
     {
-        id: 1,
-        title: "Minecraft",
-        genre: "SandBox",
-        finished: false
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true,
+        },
+        title: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: {
+                    msg: 'El Título No Puedo Estar Vacío...'
+                }
+            },
+        },
+        genre: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: 'sc'
+        },
+        finished: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        }
     }, 
     {
-        id: 2,
-        title: "Red Dead Redemption II",
-        genre: "Aventure",
-        finished: true
+        tableName: 'Juego'
     }
-]
+)
 
-let nextId = 3;
-
-function siguienteId() {
-    return nextId++;
-}
-
-module.exports = {
-    juegos,
-    siguienteId
-};
+module.exports = Juego
